@@ -167,7 +167,7 @@ const ALIAS_EX = {
   'bench press': '0025', 'barbell bench press': '0025', 'flat bench press': '0025', 'flat barbell bench press': '0025',
   'incline bench press': '0047', 'decline bench press': '0033',
   'close grip bench press': '0030', 'close-grip bench press': '0030',
-  squat: '0043', 'back squat': '0043', 'barbell squat': '0043', 'front squat': '0042',
+  squat: '0043', 'back squat': '0043', 'barbell squat': '0043', 'barbell back squat': '0043', 'front squat': '0042',
   deadlift: '0032', 'romanian deadlift': '0085', rdl: '0085', 'sumo deadlift': '0117',
   'lat pulldown': '2330', 'lat pull down': '2330', pulldown: '2330',
   shrug: '0095', shrugs: '0095',
@@ -184,6 +184,7 @@ const ALIAS_EX = {
   skullcrusher: '0060', 'skull crusher': '0060', 'lying triceps extension': '0061',
   lunge: '0054', lunges: '0054', 'cable crossover': '1269', 'cable cross over': '1269',
   'goblet squat': '1760', 'dumbbell goblet squat': '1760', 'kettlebell goblet squat': '0534',
+  'kettlebell floor press': '1298', 'kettlebell press on floor': '1298',
   // Reported in issue #74: these come out of Hevy under names no word-overlap can reach, so
   // they landed as custom exercises. The catalogue's cardio vocabulary is thin (29 of 1,324
   // entries), so each of these is the *only* candidate rather than the best of several.

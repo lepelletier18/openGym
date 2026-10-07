@@ -9,6 +9,7 @@ Everything here lives in the app under **Settings → Data**, except plan sharin
 | Pull workouts, routines and weigh-ins from Hevy Pro | **Import from Hevy** (API key) |
 | Bring body weight over from an iPhone | **Import from another app** with the Apple Health export |
 | Give someone your routines | **Plan → Share your plan → Export plan file** |
+| Bring in a plan written as text | **Plan → Share your plan → Import a plan file** with a [Markdown file](#a-plan-written-in-markdown) |
 | Back up or move everything | **Export backup** / **Import backup** |
 
 ## Workout history from another app
@@ -70,8 +71,45 @@ An export always contains every routine. To share only some of them, import the 
 demo keeps everything in your browser; nothing is uploaded. The same trick works for building a plan
 on a computer and then importing it into the phone app.
 
-Writing a plan file by hand is possible but fiddly, because the exercise ids have to match the
-library.
+Writing the JSON plan file by hand is fiddly, because the exercise ids have to match the library.
+Write the plan as a Markdown file instead, as described next.
+
+### A plan written in Markdown
+
+**Plan → share icon → Import a plan file** also takes a `.md` file, so a plan from a notes app, a
+coach or an assistant can go straight in. See
+[examples/beginner-kettlebell-plan.md](examples/beginner-kettlebell-plan.md) for a complete one.
+It goes through the same checks and the same preview as a shared plan file, and is merged as new
+routines, so nothing you already have is overwritten.
+
+What it reads:
+
+| In the file | Becomes |
+|---|---|
+| `# Title` | the plan's name |
+| A heading (`##`, `###`) or a bold line (`**Day A**`) | the name of the routine that the next table or list belongs to |
+| A table with an `Exercise` column and either `Sets x reps` or separate `Sets` and `Reps` columns | one exercise per row; optional `Weight`, `Rest` and `Notes` columns |
+| A bullet list such as `- Goblet squat: 3 x 12` | the same, one exercise per bullet |
+| A table with `Day` and `Session` columns | the weekly schedule (only the first one; later ones are ignored) |
+
+Anything else (paragraphs, other tables, advice) is skipped, so a plan can carry its own notes.
+
+How a cell is read:
+
+- `3 x 12`, `3 × 8-10` and `3 x 8 to 10`: sets and reps. A range becomes a rep range.
+- `3 x 30 sec` or `2 x 1 min`: a timed hold. In a schedule cell, `Run, 30 min easy` makes a cardio
+  routine of that length.
+- `3 x 8 per leg` (also `per arm`, `per side`, `each side`): per-side reps.
+- `4 x 15 @ 16 kg` (or `lb`): a weight. A file in pounds is converted if your profile is in kilograms.
+- `Halo + dead bug`: a superset.
+- Words in brackets, and anything else it cannot turn into a number (`as many as you can`), become
+  the exercise's note.
+
+Exercise names are matched against the library. If the title says the plan is for one piece of
+equipment ("... (one kettlebell)"), a name without equipment prefers that version, and never
+settles for a barbell lift when there is no version for that equipment. A name that matches nothing
+becomes one of your own exercises, and the import preview lists those, so you can swap them for a
+library exercise afterwards.
 
 ## Backups
 

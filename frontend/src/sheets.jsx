@@ -28,6 +28,7 @@ import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, normalize
 import { parseImport, mergeImport } from './lib/import-csv.js'
 import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines } from './lib/import-hevy.js'
 import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from './lib/plan-share.js'
+import { parsePlanMarkdown } from './lib/import-plan-md.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, weightIncrement } from './lib/progression.js'
@@ -1745,7 +1746,18 @@ function PlanTools({ close }) {
     const f = ev.target.files[0]; ev.target.value = ''; if (!f) return
     const rd = new FileReader()
     rd.onload = () => {
-      try { const bundle = parsePlan(rd.result, st.unit || 'kg'); close(); planImportSheet(bundle) }
+      try {
+        const unit = st.unit || 'kg'
+        let bundle
+        // A plan file is JSON; anything else is read as a plan written in Markdown, which comes out
+        // as the same bundle and goes through the same checks and the same sheet.
+        if (/^\s*[{[]/.test(rd.result)) bundle = parsePlan(rd.result, unit)
+        else {
+          const md = parsePlanMarkdown(rd.result, { unit })
+          bundle = { ...parsePlan(md.bundle, unit), custom: md.report.custom }
+        }
+        close(); planImportSheet(bundle)
+      }
       catch (e) { toast(t('Import failed: {0}', e.message)) }
     }
     rd.readAsText(f)
@@ -1768,7 +1780,8 @@ function PlanTools({ close }) {
     {!hasRoutines && <div className="dim small" style={{ margin: '12px 2px 0' }}>{t('Add an exercise to a routine first — an empty plan has nothing to share.')}</div>}
     <h4 className="sec">{t('Got a plan from a friend?')}</h4>
     <Button variant="ghost" icon="folder" onClick={() => fileRef.current?.click()}>{t('Import a plan file')}</Button>
-    <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
+    <div className="dim small" style={{ margin: '7px 2px 0', lineHeight: 1.4 }}>{t('A plan file, or a plan written in a Markdown (.md) file: a table or list per day, with sets × reps.')}</div>
+    <input ref={fileRef} type="file" accept="application/json,.json,text/markdown,.md,.markdown,text/plain,.txt" onChange={pickFile} hidden />
   </>
 }
 
@@ -1796,6 +1809,11 @@ function PlanImport({ bundle, close }) {
       {t(bundle.dropped === 1
         ? '{0} exercise in the file isn’t in your library and was left out.'
         : '{0} exercises in the file aren’t in your library and were left out.', bundle.dropped)}
+    </div>}
+    {bundle.custom?.length > 0 && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 14, lineHeight: 1.4 }}>
+      {t(bundle.custom.length === 1
+        ? '{0} exercise isn’t in the library, so it’s added as your own: {1}'
+        : '{0} exercises aren’t in the library, so they’re added as your own: {1}', bundle.custom.length, bundle.custom.join(', '))}
     </div>}
     {bundle.scheduledDays > 0 && <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', borderBottom: '1px solid var(--sep)', marginBottom: 16, gap: 12 }}>
       <div><div className="tt" style={{ fontSize: 15 }}>{t('Use this weekly schedule')}</div><div className="small dim">{t('Replaces your current Mon–Sun assignments.')}</div></div>
